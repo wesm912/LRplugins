@@ -23,49 +23,16 @@ local function outputToLog( message )
     myLogger:trace( message )
 end
 
-local function containingProject (collection)
-    local project = collection:getParent()
-    local c = collection
-    while project do
-        if project:getName() == 'Projects' then
-            break
-        else
-            c = project
-            project = c:getParent()
-        end
-    end
-    return (project and c:getName()) or nil
-end
-
-local function selectedProject()
-    local sources = catalog:getActiveSources()
-    local project = nil
-    if type(sources) == "string" then
-        outputToLog("active sources: " .. sources)
-        LrDialogs.error("Operation not supported for collection " .. sources)
-    elseif type(sources) ==  "table" then
-        for _, val in ipairs(sources) do
-            outputToLog(val:getName())
-            project = containingProject(val)
-            if project then
-                break
-            end
-            outputToLog("Project is " .. (project or "NONE"))
-        end
-    else
-        LrDialogs.error("Collection not part of a project")
-        outputToLog("unknown type for sources: " .. type(sources))
-    end
-    return project
-end
 
 LrTasks.startAsyncTask( function ()
-    local project = selectedProject()
+    local project = PluginInit.selectedProject()
 
     if project then
         local projectDir = LrPathUtils.child(projectRoot, project)
         outputToLog("projectDir is " .. projectDir)
         LrFileUtils.createAllDirectories(projectDir)
+        LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "review"))
+        LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "publish"))
         local exportSettings = {
             LR_collisionHandling = "ask",
             LR_embeddedMetadataOption = "all",
@@ -133,8 +100,6 @@ LrTasks.startAsyncTask( function ()
                                         local photo = catalog:addPhoto(rendition.destinationPath)
                                         if photo then
                                             photo:setPropertyForPlugin(_PLUGIN, 'workflowState', 'edit')
-                                            local externalEdits = PluginInit.getCollection(project .. " external edits")
-                                            externalEdits:addPhotos( {photo} )
                                         end
                                     else
                                         outputToLog("Got error waiting for rendition: " .. pathOrMessage)

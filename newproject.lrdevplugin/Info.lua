@@ -15,7 +15,7 @@ return {
 
     LrPluginName = LOC "$$$/NewProject/Workflow/PluginName=New Project Workflow",
 
-    -- Add the menu item to the File menu.
+    -- Add the menu item to the Library menu.
 
     LrLibraryMenuItems = {
         {
@@ -23,8 +23,23 @@ return {
             file = "CustomDialogWithObserver.lua",
         },
         {
-            title = LOC "$$$/NewProject/Workflow/SyncMetadata=Sync Metadata",
-            file = "SyncMetadata.lua",
+            title = LOC "$$$/NewProject/Workflow/AddToProject=Add Photos to Project",
+            file = "AddToProject.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/CopyRAWforEdit=Copy RAW files for editing",
+            file = "CopyRawForEditDialog.lua",
+        },
+    },
+
+    LrExportMenuItems = {
+        {
+            title = LOC "$$$/NewProject/Workflow/NewProject=New Project",
+            file = "CustomDialogWithObserver.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/AddToProject=Add to Project",
+            file = "AddToProject.lua",
         },
         {
             title = LOC "$$$/NewProject/Workflow/CopyRAWforEdit=Copy RAW files for editing",
@@ -40,13 +55,6 @@ return {
     -- Add the entry for the Plug-in Manager Dialog
     LrPluginInfoProvider = 'PluginInfoProvider.lua',
 
---  Export service provider to do copy of original to "editing" folder
---[[
-    LrExportServiceProvider = {
-        title = "Copy RAW files to edit",
-        file = 'ExportOriginalsToEditServiceProvider.lua',
-    },
---]]
-	VERSION = { major=1, minor=0, revision=0, build=1, },
+	VERSION = { major=1, minor=0, revision=1, build=1, },
 
 }

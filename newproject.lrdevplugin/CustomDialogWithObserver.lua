@@ -16,7 +16,6 @@ From the Hello World sample plug-in. Displays several custom dialog and writes d
 
 ------------------------------------------------------------------------------]]
 require 'CreateCollections'
-require 'CreateGlobalCollections'
 
 -- Access the Lightroom SDK namespaces.
 
@@ -98,9 +97,6 @@ local function showCustomDialogWithObserver()
 		outputToLog(result)
 
 		if ( result == 'ok') then
-			LrDialogs.confirm("Include selected photos", nil, "OK","Cancel")
-			-- CreateGlobalCollections:createGlobalWorkflow()
-			-- outputToLog('Finished global collection set')
 			outputToLog(updateField.value)
 			CreateCollections.createWorkflow(updateField.value)
 		end

@@ -40,6 +40,10 @@ return {
 					value = 'edit',
 				},
 				{
+					title = LOC "$$$/DancingLight/Workflow/Fields/Edit=Exported",
+					value = 'exported',
+				},
+				{
 					title = LOC "$$$/DancingLight/Workflow/Fields/Review=Review",
 					value = 'review',
 				},

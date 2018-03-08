@@ -54,6 +54,7 @@ end
 --]]
 
 root = PluginInit.projectRoot
+rootLeaf = LrPathUtils.leafName(root)
 outputToLog("Project Root is now " .. root)
 
 CreateCollections = {}
@@ -79,9 +80,9 @@ local function editingSearchDescriptor(project)
                 value = project .. " candidates",
             },
             {
-                criteria = "collection",
-                operation = "all",
-                value = project .. " external edits"
+                criteria = "folder",
+                operation = "words",
+                value = rootLeaf .. " " .. project .. " edits"
             }
         },
 
@@ -104,9 +105,9 @@ local function reviewSearchDescriptor(project)
                 value = project .. " candidates",
             },
             {
-                criteria = "collection",
-                operation = "all",
-                value = project .. " external edits"
+                criteria = "folder",
+                operation = "words",
+                value = rootLeaf .. " " .. project .. " review"
             }
         },
 
@@ -129,9 +130,9 @@ local function finishedSearchDescriptor(project)
                 value = project .. " candidates",
             },
             {
-                criteria = "collection",
-                operation = "all",
-                value = project .. " external edits"
+                criteria = "folder",
+                operation = "words",
+                value = rootLeaf .. " " .. project .. " publish"
             }
         },
 
@@ -197,8 +198,6 @@ function CreateCollections.createWorkflow(collectionName)
                             local workflow = catalog:createCollectionSet("Workflow", newProject, true)
                             candidates = catalog:createCollection(collectionName .. ' candidates', newProject, true)
 
-                            externalEdits = catalog:createCollection(collectionName .. ' external edits', newProject, true)
-
                             local metadata = catalog:createCollectionSet('1 Metadata', workflow, true)
                             local fixTitle = catalog:createSmartCollection('1.1 Fix Title',
                             {
@@ -227,7 +226,7 @@ function CreateCollections.createWorkflow(collectionName)
                                 combine = "intersect",
                                 collectionDescriptor(collectionName),
                                 {
-                                    criteria = "metadata",
+                                    criteria = "iptc",
                                     operation = "words",
                                     value = "No Genre",
                                     value2 = "",
@@ -268,7 +267,7 @@ function CreateCollections.createWorkflow(collectionName)
                                         value2 = "",
                                     },
                                     {
-                                        criteria = "metadata",
+                                        criteria = "iptc",
                                         operation = "words",
                                         value = "No Genre",
                                         value2 = "",
@@ -308,7 +307,6 @@ function CreateCollections.createWorkflow(collectionName)
                     PluginInit.setCollection(projects)
                     PluginInit.setCollection(newProject)
                     PluginInit.setCollection(candidates)
-                    PluginInit.setCollection(externalEdits)
                     outputToLog("Result returned from call to withWriteAccessDo: " .. result)
                 end -- startAsyncTask function
             )

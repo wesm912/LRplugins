@@ -6,7 +6,7 @@ local LrLogger = import 'LrLogger'
 local myLogger = LrLogger( 'newProjectWorkflow' )
 
 myLogger:enable( "logfile" ) -- Pass either a string or a table of actions.
-local function outputToLog( message )
+function outputToLog( message )
     myLogger:trace( message )
 end
 
@@ -77,5 +77,38 @@ function PluginInit.setCollection(collection)
     prefs['collectionIds'] = ids
 end
 
+function PluginInit.containingProject (collection)
+    local project = collection:getParent()
+    local c = collection
+    while project do
+        if project:getName() == 'Projects' then
+            break
+        else
+            c = project
+            project = c:getParent()
+        end
+    end
+    return (project and c:getName()) or nil
+end
+
+function PluginInit.selectedProject()
+    local sources = catalog:getActiveSources()
+    local project = nil
+    if type(sources) == "string" then
+        outputToLog("active sources: " .. sources)
+        LrDialogs.error("Operation not supported for collection " .. sources)
+    elseif type(sources) ==  "table" then
+        for _, val in ipairs(sources) do
+            project = PluginInit.containingProject(val)
+            if project then
+                break
+            end
+        end
+    else
+        LrDialogs.error("Collection not part of a project")
+        outputToLog("unknown type for sources: " .. type(sources))
+    end
+    return project
+end
 
 
