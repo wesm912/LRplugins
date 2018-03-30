@@ -6,9 +6,6 @@ local LrLogger = import 'LrLogger'
 local myLogger = LrLogger( 'newProjectWorkflow' )
 
 myLogger:enable( "logfile" ) -- Pass either a string or a table of actions.
-function outputToLog( message )
-    myLogger:trace( message )
-end
 
 PluginInit = {
 	workflowState = "fixMetadata",
@@ -24,10 +21,14 @@ PluginInit = {
     collectionIds = LrPrefs.prefsForPlugin()['collectionIds'],
 }
 
-outputToLog('Project Root')
+function PluginInit.outputToLog( message )
+    myLogger:trace( message )
+end
+
+PluginInit.outputToLog('Project Root')
 local root = PluginInit.projectRoot
-outputToLog(type(root))
-outputToLog(PluginInit.projectRoot)
+PluginInit.outputToLog(type(root))
+PluginInit.outputToLog(PluginInit.projectRoot)
 if root == nil then
     local result =
     LrDialogs.runOpenPanel(
@@ -42,8 +43,8 @@ if root == nil then
             accessoryView= nil,
         }
     )
-    outputToLog("Open dialog returned")
-    outputToLog(result)
+    PluginInit.outputToLog("Open dialog returned")
+    PluginInit.outputToLog(result)
     if result then
         root = result[1]
         local prefs = LrPrefs.prefsForPlugin()
@@ -51,7 +52,7 @@ if root == nil then
         PluginInit.projectRoot = root
     end
 end
-outputToLog("Project Root is now " .. root)
+PluginInit.outputToLog("Project Root is now " .. root)
 
 local ids = PluginInit.collectionIds
 if ids == nil then
@@ -95,7 +96,7 @@ function PluginInit.selectedProject()
     local sources = catalog:getActiveSources()
     local project = nil
     if type(sources) == "string" then
-        outputToLog("active sources: " .. sources)
+        PluginInit.outputToLog("active sources: " .. sources)
         LrDialogs.error("Operation not supported for collection " .. sources)
     elseif type(sources) ==  "table" then
         for _, val in ipairs(sources) do
@@ -106,9 +107,31 @@ function PluginInit.selectedProject()
         end
     else
         LrDialogs.error("Collection not part of a project")
-        outputToLog("unknown type for sources: " .. type(sources))
+        PluginInit.outputToLog("unknown type for sources: " .. type(sources))
     end
     return project
 end
 
+function PluginInit.getProjectsCollectionSet()
+    local projects = PluginInit.getCollection("Projects")
+    if projects == nil then
+        local collectionSets = catalog:getChildCollectionSets()
+        for _, cset in ipairs(collectionSets) do
+            if cset:getName() == "Projects" then
+                projects = cset
+                break
+            end
+        end
+    end
+    return projects
+end
+
+function PluginInit.getProjects()
+    local result = {}
+    projects = PluginInit.getProjectsCollectionSet()
+    if projects then
+        result = projects:getChildCollectionSets()
+    end
+    return result
+end
 

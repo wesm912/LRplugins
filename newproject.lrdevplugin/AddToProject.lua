@@ -19,28 +19,6 @@ local myLogger = LrLogger( 'newProjectWorkflow' )
 local projectRoot = PluginInit.projectRoot
 local bind = LrView.bind
 
-local function getProjectsCollectionSet()
-    local projects = PluginInit.getCollection("Projects")
-    if projects == nil then
-        local collectionSets = catalog:getChildCollectionSets()
-        for _, cset in ipairs(collectionSets) do
-            if cset:getName() == "Projects" then
-                projects = cset
-                break
-            end
-        end
-    end
-    return projects
-end
-
-local function getProjects()
-    local result = {}
-    projects = getProjectsCollectionSet()
-    if projects then
-        result = projects:getChildCollectionSets()
-    end
-    return result
-end
 
 local function showProjectPickerDialog()
     -- -- outputToLog("Entering showProjectPickerDialog")
@@ -48,7 +26,7 @@ local function showProjectPickerDialog()
         function()
             local currentProject = PluginInit.selectedProject()
             local projectNames = {}
-            local allProjects = getProjects()
+            local allProjects = PluginInit.getProjects()
             -- outputToLog("Current project: " .. (currentProject or "NONE"))
             local popupItems = {}
             local chosenIndex = -1

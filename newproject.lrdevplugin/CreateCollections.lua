@@ -19,43 +19,9 @@ myLogger:enable( "logfile" ) -- Pass either a string or a table of actions.
 
 -- Write trace information to the logger.
 
-local function outputToLog( message )
-    myLogger:trace( message )
-end
-
---[[
-outputToLog('Project Root')
-root = PluginInit.projectRoot
-outputToLog(type(root))
-outputToLog(PluginInit.projectRoot)
-if root == nil then
-    local result =
-    LrDialogs.runOpenPanel(
-        {
-            title = "Choose Project Root",
-            prompt= "Choose",
-            canChooseFiles= false,
-            canChooseDirectories= true,
-            canCreateDirectories= true,
-            allowsMultipleSelection= false,
-            fileTypes= "directory",
-            accessoryView= nil,
-        }
-    )
-    outputToLog("Open dialog returned")
-    outputToLog(result)
-    if result then
-        root = result[1]
-        local prefs = LrPrefs.prefsForPlugin()
-        prefs.projectRoot = root
-        PluginInit.projectRoot = root
-    end
-end
---]]
-
 root = PluginInit.projectRoot
 rootLeaf = LrPathUtils.leafName(root)
-outputToLog("Project Root is now " .. root)
+PluginInit.outputToLog("Project Root is now " .. root)
 
 CreateCollections = {}
 
@@ -161,16 +127,16 @@ local function setDefaultPluginProps(photo)
 end
 
 local function replaceEmptyMetadata(photo, key, display)
-    outputToLog('replaceEmptyMetadata args: ' .. key ..', ' .. display)
+    PluginInit.outputToLog('replaceEmptyMetadata args: ' .. key ..', ' .. display)
     local value = photo:getFormattedMetadata(key)
-    outputToLog('replaceEmptyMetadata value: ' .. value)
+    PluginInit.outputToLog('replaceEmptyMetadata value: ' .. value)
     if value:len() <= 0 then
-        outputToLog('Setting Raw metadata for ' .. key .. ' to No ' .. capitalize(display))
+        PluginInit.outputToLog('Setting Raw metadata for ' .. key .. ' to No ' .. capitalize(display))
         if key == 'title' then
-            outputToLog('Setting plugin property for ' .. key .. ' to No ' .. capitalize(display))
+            PluginInit.outputToLog('Setting plugin property for ' .. key .. ' to No ' .. capitalize(display))
             photo:setPropertyForPlugin(_PLUGIN,  key,
                 "No " .. display)
-            outputToLog('SUCCESS Setting plugin property for ' .. key .. ' to No ' .. capitalize(display))
+            PluginInit.outputToLog('SUCCESS Setting plugin property for ' .. key .. ' to No ' .. capitalize(display))
         end
         photo:setRawMetadata(key, "No " .. capitalize(display))
     else
@@ -181,17 +147,17 @@ end
 function CreateCollections.createWorkflow(collectionName)
     LrFunctionContext.callWithContext( 'createWorkflow',
         function(context, collectionName)
-            outputToLog('createWorkflow called with arg ')
-            outputToLog(collectionName)
+            PluginInit.outputToLog('createWorkflow called with arg ')
+            PluginInit.outputToLog(collectionName)
             LrTasks.startAsyncTask(
                 function( )
-                    outputToLog("Starting async task")
+                    PluginInit.outputToLog("Starting async task")
                     local projects, newProject, candidates, externalEdits
                     local result = catalog:withWriteAccessDo("CreateCollectionSets",
                         function (context)
-                            outputToLog("Begin creating collection sets")
+                            PluginInit.outputToLog("Begin creating collection sets")
                             projects = catalog:createCollectionSet('Projects', nil, true)
-                            outputToLog("Created 'Projects' collectionSet " )
+                            PluginInit.outputToLog("Created 'Projects' collectionSet " )
 
                             newProject = catalog:createCollectionSet(collectionName, projects, true)
 
@@ -301,13 +267,13 @@ function CreateCollections.createWorkflow(collectionName)
                         end,  -- withWriteAccessDo
                         {
                             timeout = 60,
-                            callback = function() outputToLog("task timed out") end,
+                            callback = function() PluginInit.outputToLog("task timed out") end,
                         }
                     )
                     PluginInit.setCollection(projects)
                     PluginInit.setCollection(newProject)
                     PluginInit.setCollection(candidates)
-                    outputToLog("Result returned from call to withWriteAccessDo: " .. result)
+                    PluginInit.outputToLog("Result returned from call to withWriteAccessDo: " .. result)
                 end -- startAsyncTask function
             )
         end, -- callWithContext

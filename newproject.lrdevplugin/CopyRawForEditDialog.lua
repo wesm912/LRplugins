@@ -1,6 +1,6 @@
 -- CopyRawForEditDialog.lua
 require 'PluginInit'
-
+require 'ExportSettings'
 local LrFunctionContext = import 'LrFunctionContext'
 local LrBinding = import 'LrBinding'
 local LrDialogs = import 'LrDialogs'
@@ -14,6 +14,7 @@ local LrLogger = import 'LrLogger'
 local myLogger = LrLogger( 'newProjectWorkflow' )
 local projectRoot = PluginInit.projectRoot
 local LrExportSession = import 'LrExportSession'
+-- local ExportSettings = import 'ExportSettings'
 
 myLogger:enable( "logfile" ) -- Pass either a string or a table of actions.
 
@@ -32,54 +33,15 @@ LrTasks.startAsyncTask( function ()
         outputToLog("projectDir is " .. projectDir)
         LrFileUtils.createAllDirectories(projectDir)
         LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "review"))
+        -- "publish" holds finished psd, tiff, raw files ready for conversion to JPG
+        -- when converted, they go to a subdirectory of print or web folders
+        -- The subdirectory indicates the target, the filename carries the quality and size
+
         LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "publish"))
         LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "print"))
-        LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "web"))
-        local exportSettings = {
-            LR_collisionHandling = "ask",
-            LR_embeddedMetadataOption = "all",
-            LR_exportServiceProvider = "com.adobe.ag.export.file",
-            LR_exportServiceProviderTitle = "Hard Drive",
-            LR_export_colorSpace = "AdobeRGB",
-            LR_export_destinationPathPrefix = projectDir,
-            LR_export_destinationPathSuffix = "edits",
-            LR_export_destinationType = "specificFolder",
-            LR_export_externalEditingApp = "/Applications/Adobe Lightroom Classic CC/Adobe Lightroom Classic CC.app",
-            LR_export_postProcessing = "doNothing",
-            LR_export_useSubfolder = true,
-            LR_export_videoFileHandling = "include",
-            LR_export_videoFormat = "4e49434b-4832-3634-fbfb-fbfbfbfbfbfb",
-            LR_export_videoPreset = "original",
-            LR_extensionCase = "lowercase",
-            LR_format = "ORIGINAL",
-            LR_includeFaceTagsAsKeywords = true,
-            LR_includeFaceTagsInIptc = true,
-            LR_includeVideoFiles = true,
-            LR_initialSequenceNumber = 1,
-            LR_jpeg_limitSize = 4800,
-            LR_jpeg_useLimitSize = false,
-            LR_metadata_keywordOptions = "flat",
-            LR_outputSharpeningLevel = 2,
-            LR_outputSharpeningMedia = "screen",
-            LR_outputSharpeningOn = false,
-            LR_reimportExportedPhoto = false,
-            LR_reimport_stackWithOriginal = false,
-            LR_reimport_stackWithOriginal_position = "below",
-            LR_removeFaceMetadata = false,
-            LR_removeLocationMetadata = false,
-            LR_renamingTokensOn = true,
-            LR_selectedTextFontFamily = "Myriad Web Pro",
-            LR_selectedTextFontSize = 12,
-            LR_size_doConstrain = false,
-            LR_size_percentage = 100,
-            LR_size_resolution = 240,
-            LR_size_resolutionUnits = "inch",
-            LR_tokenCustomString = "Wes Mitchell",
-            LR_tokens = "{{image_name}}",
-            LR_tokensArchivedToString2 = "{{image_name}}",
-            LR_useWatermark = false,
-            LR_watermarking_id = "<simpleCopyrightWatermark>",
-        }
+        local webDir = LrPathUtils.child(projectDir, "web")
+        LrFileUtils.createAllDirectories(webDir)
+        local exportSettings = ExportSettings.getExportSettings(projectDir, "edits")
         LrTasks.startAsyncTask(
                 function( )
                         outputToLog("Starting async task")
@@ -91,10 +53,13 @@ LrTasks.startAsyncTask( function ()
                         photosToExport = photos,
                         exportSettings = exportSettings,
                     })
+                    local photos = {}
+                    local activePhoto = nil
                     local result = catalog:withWriteAccessDo("doExportOnCurrentTask",
                             function (context)
                                 exportSession:doExportOnCurrentTask()
                                 -- Set workflow state so shows up back in LR
+                                local first = true
                                 for _, rendition in exportSession:renditions() do
                                     local success, pathOrMessage = rendition:waitForRender()
                                     outputToLog("Got pathOrMessage: " .. pathOrMessage)
@@ -102,6 +67,10 @@ LrTasks.startAsyncTask( function ()
                                         local photo = catalog:addPhoto(rendition.destinationPath)
                                         if photo then
                                             photo:setPropertyForPlugin(_PLUGIN, 'workflowState', 'edit')
+                                            if activePhoto then
+                                                table.insert(photos, activePhoto)
+                                            end
+                                            activePhoto = photo
                                         end
                                     else
                                         outputToLog("Got error waiting for rendition: " .. pathOrMessage)
@@ -109,6 +78,10 @@ LrTasks.startAsyncTask( function ()
                                 end
                             end)
                     outputToLog("write access do returned " .. result)
+                    local editsFolderPath = LrPathUtils.child(projectDir, "edits")
+                    local editsFolder = catalog:getFolderByPath(editsFolderPath)
+                    catalog:setActiveSources(editsFolder)
+                    catalog:setSelectedPhotos(activePhoto, photos)
                 end)
     end
     end)
