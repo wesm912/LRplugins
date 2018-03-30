@@ -68,7 +68,7 @@ LrTasks.startAsyncTask( function ()
                                         if photo then
                                             photo:setPropertyForPlugin(_PLUGIN, 'workflowState', 'edit')
                                             if activePhoto then
-                                                table.insert(photos, activePhoto)
+                                                -- table.insert(photos, activePhoto)
                                             end
                                             activePhoto = photo
                                         end
@@ -76,12 +76,15 @@ LrTasks.startAsyncTask( function ()
                                         outputToLog("Got error waiting for rendition: " .. pathOrMessage)
                                     end
                                 end
+                                local editsFolderPath = LrPathUtils.child(projectDir, "edits")
+                                local editsFolder = catalog:getFolderByPath(editsFolderPath)
+                                catalog:setActiveSources(editsFolder)
+                                activePhoto:getFormattedMetadata("fileName")
+--                                outputToLog("Setting activePhoto to " .. activePhoto:getFormattedMetadata("folderName") .. "/" ..
+--                                        activePhoto:getFormattedMetadata("fileName"))
+                                catalog:setSelectedPhotos(activePhoto, photos)
                             end)
                     outputToLog("write access do returned " .. result)
-                    local editsFolderPath = LrPathUtils.child(projectDir, "edits")
-                    local editsFolder = catalog:getFolderByPath(editsFolderPath)
-                    catalog:setActiveSources(editsFolder)
-                    catalog:setSelectedPhotos(activePhoto, photos)
                 end)
     end
     end)
