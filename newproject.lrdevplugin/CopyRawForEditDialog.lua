@@ -33,6 +33,8 @@ LrTasks.startAsyncTask( function ()
         LrFileUtils.createAllDirectories(projectDir)
         LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "review"))
         LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "publish"))
+        LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "print"))
+        LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "web"))
         local exportSettings = {
             LR_collisionHandling = "ask",
             LR_embeddedMetadataOption = "all",

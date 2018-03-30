@@ -38,7 +38,7 @@ return {
             file = "CustomDialogWithObserver.lua",
         },
         {
-            title = LOC "$$$/NewProject/Workflow/AddToProject=Add to Project",
+            title = LOC "$$$/NewProject/Workflow/AddToProject=Add Photos to Project",
             file = "AddToProject.lua",
         },
         {
