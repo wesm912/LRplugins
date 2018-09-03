@@ -256,8 +256,9 @@ function CreateCollections.createWorkflow(collectionName)
                             local finished = catalog:createSmartCollection('4 Ready to Publish',
                                 finishedSearchDescriptor(collectionName), workflow, true)
                             local photos = catalog:getTargetPhotos()
-                            candidates:addPhotos(photos)
-                            for _, photo in ipairs(photos) do
+                            local newPhotos = catalog:createVirtualCopies(collectionName)
+                            candidates:addPhotos(newPhotos)
+                            for _, photo in ipairs(newPhotos) do
                                 replaceEmptyMetadata(photo, 'intellectualGenre', 'genre')
                                 replaceEmptyMetadata(photo, 'title', 'title')
                                 replaceEmptyMetadata(photo, 'caption', 'caption')

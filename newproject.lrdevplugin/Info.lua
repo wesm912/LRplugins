@@ -30,6 +30,14 @@ return {
             title = LOC "$$$/NewProject/Workflow/CopyRAWforEdit=Copy RAW files for editing",
             file = "CopyRawForEditDialog.lua",
         },
+        {
+            title = LOC "$$$/NewProject/Workflow/MoveToReview=Move to Review",
+            file = "MoveToReview.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/AddToStock=Add to Stock",
+            file = "AddToStock.lua",
+        },
     },
 
     LrExportMenuItems = {
@@ -44,6 +52,14 @@ return {
         {
             title = LOC "$$$/NewProject/Workflow/CopyRAWforEdit=Copy RAW files for editing",
             file = "CopyRawForEditDialog.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/MoveToReview=Move to Review",
+            file = "MoveToReview.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/AddToStock=Add to Stock",
+            file = "AddToStock.lua",
         },
     },
     -- Add the Metadata Definition File

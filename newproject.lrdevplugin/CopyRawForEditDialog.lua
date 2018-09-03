@@ -43,48 +43,46 @@ LrTasks.startAsyncTask( function ()
         LrFileUtils.createAllDirectories(webDir)
         local exportSettings = ExportSettings.getExportSettings(projectDir, "edits")
         LrTasks.startAsyncTask(
-                function( )
-                        outputToLog("Starting async task")
-                        local photos = catalog:getTargetPhotos()
-                        for _, photo in ipairs(photos) do
-                            outputToLog(photo:getFormattedMetadata()['fileName'])
-                        end
-                    local exportSession = LrExportSession({
-                        photosToExport = photos,
-                        exportSettings = exportSettings,
-                    })
-                    local photos = {}
-                    local activePhoto = nil
-                    local result = catalog:withWriteAccessDo("doExportOnCurrentTask",
-                            function (context)
-                                exportSession:doExportOnCurrentTask()
-                                -- Set workflow state so shows up back in LR
-                                local first = true
-                                for _, rendition in exportSession:renditions() do
-                                    local success, pathOrMessage = rendition:waitForRender()
-                                    outputToLog("Got pathOrMessage: " .. pathOrMessage)
-                                    if success then
-                                        local photo = catalog:addPhoto(rendition.destinationPath)
-                                        if photo then
-                                            photo:setPropertyForPlugin(_PLUGIN, 'workflowState', 'edit')
-                                            if activePhoto then
-                                                -- table.insert(photos, activePhoto)
-                                            end
-                                            activePhoto = photo
-                                        end
-                                    else
-                                        outputToLog("Got error waiting for rendition: " .. pathOrMessage)
+            function( )
+                    outputToLog("Starting async task")
+                    local photos = catalog:getTargetPhotos()
+                    for _, photo in ipairs(photos) do
+                        outputToLog(photo:getFormattedMetadata()['fileName'])
+                    end
+                local exportSession = LrExportSession({
+                    photosToExport = photos,
+                    exportSettings = exportSettings,
+                })
+                local activePhoto = nil
+                local result = catalog:withWriteAccessDo("doExportOnCurrentTask",
+                        function (context)
+                            exportSession:doExportOnCurrentTask()
+                            -- Set workflow state so shows up back in LR
+                            local first = true
+                            for _, rendition in exportSession:renditions() do
+                                local success, pathOrMessage = rendition:waitForRender()
+                                outputToLog("Got pathOrMessage: " .. pathOrMessage)
+                                if success then
+                                    local photo = catalog:addPhoto(rendition.destinationPath)
+                                    if photo then
+                                        photo:setPropertyForPlugin(_PLUGIN, 'workflowState', 'edit')
+                                        activePhoto = photo
                                     end
+                                else
+                                    outputToLog("Got error waiting for rendition: " .. pathOrMessage)
                                 end
+                            end
+                            if activePhoto then
                                 local editsFolderPath = LrPathUtils.child(projectDir, "edits")
                                 local editsFolder = catalog:getFolderByPath(editsFolderPath)
                                 catalog:setActiveSources(editsFolder)
                                 activePhoto:getFormattedMetadata("fileName")
 --                                outputToLog("Setting activePhoto to " .. activePhoto:getFormattedMetadata("folderName") .. "/" ..
 --                                        activePhoto:getFormattedMetadata("fileName"))
-                                catalog:setSelectedPhotos(activePhoto, photos)
-                            end)
-                    outputToLog("write access do returned " .. result)
-                end)
+                                catalog:setSelectedPhotos(activePhoto, {})
+                            end
+                        end)
+                outputToLog("write access do returned " .. result)
+        end)
     end
-    end)
+end)

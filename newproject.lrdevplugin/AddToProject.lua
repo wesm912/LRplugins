@@ -76,6 +76,9 @@ local function showProjectPickerDialog()
 
                 if ( result == 'ok') then
                     local chosenProject = allProjects[props.chosenIndex]
+                    if not chosenProject then
+                        return
+                    end
                     local candidates = nil
                     for j, c in ipairs(chosenProject:getChildCollections()) do
                         if c:getName() == chosenProject:getName() .. " candidates" then
@@ -86,10 +89,12 @@ local function showProjectPickerDialog()
                     end
                     if candidates then
                         photos = catalog:getTargetPhotos()
+                        local vCopies = catalog:createVirtualCopies(chosenProject:getName())
                         catalog:withWriteAccessDo("AddPhotosToCollection",
                             function(context)
-                                candidates:addPhotos(photos)
-                                for _, photo in ipairs(photos) do
+                                candidates:addPhotos(vCopies)
+                                catalog:setActiveSources(candidates)
+                                for _, photo in ipairs(vCopies) do
                                     -- outputToLog("Added candidate " .. photo:getFormattedMetadata("fileName"))
                                     photo:setPropertyForPlugin(_PLUGIN, 'workflowState', 'fixMetadata')
                                 end

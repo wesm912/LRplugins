@@ -79,6 +79,12 @@ function PluginInit.setCollection(collection)
 end
 
 function PluginInit.containingProject (collection)
+    if not collection then
+        return nil
+    end
+    if type(collection) == "string" then
+        return nil
+    end
     local project = collection:getParent()
     local c = collection
     while project do
