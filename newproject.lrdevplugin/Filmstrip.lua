@@ -5,7 +5,8 @@
 require 'PluginInit'
 
 local LrApplication = import 'LrApplication'
-local LrTasks = import 'LrTasks'local LrBinding = import "LrBinding"
+local LrTasks = import 'LrTasks'
+local LrBinding = import "LrBinding"
 local LrDialogs = import "LrDialogs"
 local LrFunctionContext = import "LrFunctionContext"
 local LrView = import "LrView"
@@ -50,8 +51,8 @@ end
 
 function Filmstrip.makeFilmStrip( args )
     PluginInit.outputToLog("Start makeFilmStrip")
-    if not args or not args.photos then return content end
-    local length = args.length or 4
+    if not args or not args.photos then return nil end
+    local length = args.length or #args.photos
     local height = args.height or 200
     local width = args.width or 800
     local pwidth = math.max(width / length, 120)
@@ -60,13 +61,13 @@ function Filmstrip.makeFilmStrip( args )
     local content = {}
 
     PluginInit.outputToLog("Got " .. #args.photos .. " photos")
-    LrFunctionContext.callWithContext( 'makeFilmStrip', function( context )
+    content = LrFunctionContext.callWithContext( 'makeFilmStrip', function( context )
         local f = LrView.osFactory()
         local properties = LrBinding.makePropertyTable( context )
-        properties.photos = photos
+        properties.photos = args.photos
+        local photos = args.photos
         properties.firstIndex = 1
-        local row_args = {bind_to_object = properties}
-        properties.row_args = row_args
+        properties.length = length
         local cat_photos = {}
         for i, photo in ipairs(args.photos) do
             local pargs = {
@@ -80,35 +81,47 @@ function Filmstrip.makeFilmStrip( args )
             }
             table.insert(cat_photos, f:catalog_photo(pargs))
         end
-        PluginInit.outputToLog("Before definition of update_row_args")
-
-        local function update_row_args(props, t, firstIndex)
-            PluginInit.outputToLog("Entering update_row_args")
-            t.bind_to_object = props
-            table.insert(t, f:push_button {
-                title = "<",
-                action = function (button)
-                    props.firstIndex = math.max(props.firstIndex - 1, 1)
-                end,
-                enabled = LrView.bind {
-                    key = "firstIndex",
-                    transform = function(value, tbl)
-                        return value > 1
+        properties.selectedPhoto = photos[properties.firstIndex]
+        properties:addObserver("firstIndex", function(props, key, newValue)
+                PluginInit.outputToLog("Observer called with key " .. key ..
+                    " and newValue  " .. tostring(newValue))
+                if key == "firstIndex" then
+                    if newValue >= 1 and newValue <= length then
+                        properties.selectedPhoto = properties.photos[newValue]
+                        PluginInit.outputToLog("Observer: newValue is " .. tostring(newValue))
                     end
-                }
-            })
-            PluginInit.outputToLog("After adding first button")
-            for i = 0, length, 1 do
-                table.insert(t, cat_photos[i + firstIndex])
-                PluginInit.outputToLog("Added catalog photo at index " .. i + firstIndex
-                    .. " " .. tostring(cat_photos[i+firstIndex]) )
-            end
-            PluginInit.outputToLog("After adding photos")
-            table.insert(t,
+                end
+            end)
+
+        content = f:column {
+            bind_to_object = properties,
+            f:row {
+                f:catalog_photo({
+                    photo = LrView.bind('selectedPhoto')
+                    })
+            },
+            f:row {
+                f:push_button {
+                    title = "<",
+                    action = function (button)
+                        properties.firstIndex = math.max(properties.firstIndex - 1, 1)
+                        properties.selectedPhoto = properties.photos[properties.firstIndex]
+                    end,
+                    enabled = LrView.bind {
+                        key = "firstIndex",
+                        transform = function(value, tbl)
+                            return value > 1
+                        end
+                    }
+                },
                 f:push_button {
                     title = ">",
                     action = function (button)
-                        props.firstIndex = math.min(props.firstIndex + 1, length)
+                        local old = properties.firstIndex
+                        PluginInit.outputToLog("Next: old firstIndex is " .. old)
+                        properties.firstIndex = math.min(properties.firstIndex + 1, length)
+                        PluginInit.outputToLog("Next: new firstIndex is " .. properties.firstIndex)
+                        properties.selectedPhoto = properties.photos[properties.firstIndex]
                     end,
                     enabled = LrView.bind {
                         key = "firstIndex",
@@ -116,20 +129,10 @@ function Filmstrip.makeFilmStrip( args )
                             return value < length
                         end
                     }
-            })
-            PluginInit.outputToLog("After adding last button")
-            props.row_args = t
-        end
-
-        properties:addObserver("firstIndex", function(props, key, newValue)
-            update_row_args(props, props.row_args, newValue)
-        end
-        )
-        PluginInit.outputToLog("After adding observer")
-        update_row_args(properties, properties.row_args, properties.firstIndex)
-        content = f:row (LrView.bind('row_args', properties))
-        PluginInit.outputToLog(print_r(properties.row_args))
---        properties.firstIndex = 1
+                },
+            },
+        }
+        return content
     end)
     return content
 end
@@ -139,9 +142,11 @@ function showFilmStripTest()
 --    LrFunctionContext.callWithContext( "TestFilmStripDialog", function( context )
         local photos = catalog:getTargetPhotos()
         local f = LrView.osFactory()
+        local content = Filmstrip.makeFilmStrip({photos = photos})
+        PluginInit.outputToLog("makeFilmStrip returned " .. tostring(content))
         local result = LrDialogs.presentModalDialog {
             title = "Filmstrip Test",
-            contents = Filmstrip.makeFilmStrip({photos = photos})
+            contents = content,
         }
 --    end)
 end

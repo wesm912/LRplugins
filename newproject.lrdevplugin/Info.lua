@@ -61,6 +61,14 @@ return {
             title = LOC "$$$/NewProject/Workflow/AddToStock=Add to Stock",
             file = "AddToStock.lua",
         },
+        {
+            title = LOC "$$$/NewProject/Workflow/ShowFilmStrip=Filmstrip",
+            file = "Filmstrip.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/PublishToInstagram=Publish to Instagram",
+            file = "PublishToInstagram.lua",
+        },
     },
     -- Add the Metadata Definition File
     LrMetadataProvider = 'CustomMetadataDefinition.lua',

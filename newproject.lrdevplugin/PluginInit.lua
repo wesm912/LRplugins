@@ -4,6 +4,7 @@ local catalog = LrApplication.activeCatalog()
 local LrPrefs = import 'LrPrefs'
 local LrLogger = import 'LrLogger'
 local myLogger = LrLogger( 'newProjectWorkflow' )
+-- local PublishToInstagram = import 'PublishToInstagram'
 
 myLogger:enable( "logfile" ) -- Pass either a string or a table of actions.
 
@@ -125,6 +126,7 @@ function PluginInit.getProjectsCollectionSet()
         for _, cset in ipairs(collectionSets) do
             if cset:getName() == "Projects" then
                 projects = cset
+                PluginInit.setCollection(projects)
                 break
             end
         end
@@ -141,3 +143,11 @@ function PluginInit.getProjects()
     return result
 end
 
+LrTasks.startAsyncTask(
+    function()
+        projects = PluginInit.getProjectsCollectionSet()
+        local ids = LrPrefs.prefsForPlugin()['collectionIds']
+        local id = ids['Projects']
+        PluginInit.outputToLog("Result of PluginInit async initialization: id of 'Projects' is " .. (id or 'nil'))
+    end
+)
