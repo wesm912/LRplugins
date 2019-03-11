@@ -22,29 +22,17 @@ return{
 	id = 'DancingLightCustomMetadataTagset',
 
 	items = {
-		{ 'com.adobe.label', label = LOC "$$$/Metadata/OrigLabel=Standard Metadata" },
-		'com.adobe.filename',
-		'com.adobe.folder',
-
 		'com.adobe.title',
 		{ 'com.adobe.caption', height_in_lines = 3 },
 		"com.adobe.separator",
 
-		{
-			formatter = "com.adobe.label",
-		  	label = LOC "$$$/CustomMetadata/Fields/IPTCLabel=IPTC",
-		},
 		"com.adobe.intellectualGenre",
 		"com.adobe.location",
 		'com.adobe.city',
         'com.adobe.state',
         'com.adobe.country',
-        'com.adobe.isoCountryCode',
-		"com.adobe.locationCreated",
-		"com.adobe.locationShown",
 		"com.adobe.event",
 		"com.adobe.iptcPersonShown",
-		"com.adobe.separator",
 
 		{
 			formatter = "com.adobe.label",

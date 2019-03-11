@@ -52,7 +52,10 @@ function getPhotoEditFields(photo)
     local title = photo:getFormattedMetadata('title')
     local caption = photo:getFormattedMetadata('caption')
     local genre = photo:getFormattedMetadata('intellectualGenre')
-    return {title = title, caption = caption, genre = genre}
+    local width = photo:getRawMetadata('width')
+    local height = photo:getRawMetadata('height')
+    local aspectRatio = photo:getRawMetadata('aspectRatio')
+    return {title = title, caption = caption, genre = genre, height = height, width = width, aspectRatio = aspectRatio}
 end
 
 function savePhotoMetadataChanges(photo, args)
@@ -84,15 +87,23 @@ function Filmstrip.makeFilmStrip( args )
             properties.firstIndex = 1
             properties.length = length
             properties.edit_metadata = {}
+            cat_photo_thumbnails = {}
 
             for i, photo in ipairs(args.photos) do
                 properties.edit_metadata[photo.localIdentifier] = getPhotoEditFields(photo)
+                table.insert(cat_photo_thumbnails,
+                    f:catalog_photo({
+                        photo = photo,
+                        width = 128,
+                        height = 128,
+                        mouse_down = function (obj)
+                            PluginInit.outputToLog("Calling photoOnClick for obj " .. tostring(obj))
+                            photoOnClick(obj)
+                        end,
+                        }))
             end
             properties.selectedPhoto = photos[properties.firstIndex]
-            properties:addObserver("selectedTitle", function(props, key, newValue)
-                    PluginInit.outputToLog("Observer called with key " .. key ..
-                        " and newValue  " .. tostring(newValue))
-                end)
+
             local function saveMetadataChanges(photo)
                 PluginInit.outputToLog("Saving metadata for photo " .. photo.localIdentifier)
                 LrTasks.startAsyncTask( function()
@@ -103,7 +114,11 @@ function Filmstrip.makeFilmStrip( args )
                         end)
                     end)
             end
-            local function updateSelectedPhotoFields()
+            local function photoOnClick(catPhoto)
+                properties.selectedPhoto = catPhoto.photo
+                updateSelectedPhotoFields()
+            end
+           local function updateSelectedPhotoFields()
                 local id = properties.selectedPhoto.localIdentifier
                 properties.selectedTitle = properties.edit_metadata[id]['title']
                 properties.selectedCaption = properties.edit_metadata[id]['caption']
@@ -113,14 +128,14 @@ function Filmstrip.makeFilmStrip( args )
             content = f:column {
                 bind_to_object = properties,
                 f:row {
+                    spacing = 20,
                     f:catalog_photo({
-                        place_vertical = .05,
-    --                    place_horizontal = 5,
+                        width = 512,
+                        height = 512,
                         photo = LrView.bind('selectedPhoto')
                         }),
                     f:group_box {
-    --                    place_vertical = 10,
-    --                    place_horizontal = 10,
+                        place_vertical = .5,
                         f:row {
                             fill_horizonal = 1,
                             spacing = f:label_spacing(),
@@ -128,7 +143,6 @@ function Filmstrip.makeFilmStrip( args )
                             f:edit_field {
                                 value = LrView.bind('selectedTitle'),
                                 wraps = true,
---                                immediate = true,
                                 validate = function(view, value)
                                     PluginInit.outputToLog("Validating title field " .. value)
                                     if #value == 0 then
@@ -191,6 +205,7 @@ function Filmstrip.makeFilmStrip( args )
                     },
                 },
                 f:row {
+                    spacing = 100,
                     f:push_button {
                         title = "<",
                         action = function (button)
@@ -219,6 +234,17 @@ function Filmstrip.makeFilmStrip( args )
                                 return value < length
                             end
                         }
+                    },
+                },
+                f:row {
+                    fill_horizontal = 1,
+                    margin_vertical = 10,
+                    f:scrolled_view {
+                        width = 800,
+                        fill_horizontal = 1,
+                        horizontal_scroller = true,
+                        vertical_scroller   = false,
+                        f:row (cat_photo_thumbnails),
                     },
                 },
             }
