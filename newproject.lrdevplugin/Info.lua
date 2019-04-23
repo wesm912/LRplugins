@@ -27,16 +27,28 @@ return {
             file = "AddToProject.lua",
         },
         {
-            title = LOC "$$$/NewProject/Workflow/CopyRAWforEdit=Copy RAW files for editing",
-            file = "CopyRawForEditDialog.lua",
-        },
-        {
             title = LOC "$$$/NewProject/Workflow/MoveToReview=Move to Review",
             file = "MoveToReview.lua",
         },
         {
             title = LOC "$$$/NewProject/Workflow/AddToStock=Add to Stock",
             file = "AddToStock.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/AddToStock=Create Web Proofs",
+            file = "CreateWebProofs.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/ShowFilmStrip=Filmstrip",
+            file = "Filmstrip.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/PublishToInstagram=Publish to Instagram",
+            file = "PublishToInstagram.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/SynchronizeProjectFolder=Synchronize Assets",
+            file = "SynchronizeAssets.lua",
         },
     },
 
@@ -50,10 +62,6 @@ return {
             file = "AddToProject.lua",
         },
         {
-            title = LOC "$$$/NewProject/Workflow/CopyRAWforEdit=Copy RAW files for editing",
-            file = "CopyRawForEditDialog.lua",
-        },
-        {
             title = LOC "$$$/NewProject/Workflow/MoveToReview=Move to Review",
             file = "MoveToReview.lua",
         },
@@ -62,12 +70,20 @@ return {
             file = "AddToStock.lua",
         },
         {
+            title = LOC "$$$/NewProject/Workflow/AddToStock=Create Web Proofs",
+            file = "CreateWebProofs.lua",
+        },
+        {
             title = LOC "$$$/NewProject/Workflow/ShowFilmStrip=Filmstrip",
             file = "Filmstrip.lua",
         },
         {
             title = LOC "$$$/NewProject/Workflow/PublishToInstagram=Publish to Instagram",
             file = "PublishToInstagram.lua",
+        },
+        {
+            title = LOC "$$$/NewProject/Workflow/SynchronizeProjectFolder=Synchronize Assets",
+            file = "SynchronizeAssets.lua",
         },
     },
     -- Add the Metadata Definition File

@@ -14,7 +14,8 @@ local catalog = LrApplication.activeCatalog()
 local LrPrefs = import 'LrPrefs'
 local LrLogger = import 'LrLogger'
 local myLogger = LrLogger( 'newProjectWorkflow' )
-
+local LrFileUtils = import 'LrFileUtils'
+local projectRoot = PluginInit.projectRoot
 myLogger:enable( "logfile" ) -- Pass either a string or a table of actions.
 
 -- Write trace information to the logger.
@@ -22,6 +23,7 @@ myLogger:enable( "logfile" ) -- Pass either a string or a table of actions.
 root = PluginInit.projectRoot
 rootLeaf = LrPathUtils.leafName(root)
 PluginInit.outputToLog("Project Root is now " .. root)
+local outputToLog = PluginInit.outputToLog
 
 CreateCollections = {}
 
@@ -46,6 +48,11 @@ local function editingSearchDescriptor(project)
                 value = project .. " candidates",
             },
             {
+                criteria = "collection",
+                operation = "all",
+                value = project .. " assets",
+            },
+            {
                 criteria = "folder",
                 operation = "words",
                 value = rootLeaf .. " " .. project .. " edits"
@@ -65,10 +72,15 @@ local function reviewSearchDescriptor(project)
     return {
         {
             combine = "union",
-           {
+            {
                 criteria = "collection",
                 operation = "all",
                 value = project .. " candidates",
+            },
+            {
+                criteria = "collection",
+                operation = "all",
+                value = project .. " assets",
             },
             {
                 criteria = "folder",
@@ -90,10 +102,15 @@ local function finishedSearchDescriptor(project)
     return {
         {
             combine = "union",
-           {
+            {
                 criteria = "collection",
                 operation = "all",
                 value = project .. " candidates",
+            },
+            {
+                criteria = "collection",
+                operation = "all",
+                value = project .. " assets",
             },
             {
                 criteria = "folder",
@@ -144,7 +161,19 @@ local function replaceEmptyMetadata(photo, key, display)
     end
 end
 
+function CreateAssetDirectories(project)
+    if project then
+        local projectDir = LrPathUtils.child(projectRoot, project)
+        outputToLog("CreateAssetDirectories: projectDir is " .. projectDir)
+        LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "edits"))
+        LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "publish"))
+        LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "print"))
+        LrFileUtils.createAllDirectories(LrPathUtils.child(projectDir, "web"))
+    end
+end
+
 function CreateCollections.createWorkflow(collectionName)
+    local candidates
     LrFunctionContext.callWithContext( 'createWorkflow',
         function(context, collectionName)
             PluginInit.outputToLog('createWorkflow called with arg ')
@@ -152,7 +181,7 @@ function CreateCollections.createWorkflow(collectionName)
             LrTasks.startAsyncTask(
                 function( )
                     PluginInit.outputToLog("Starting async task")
-                    local projects, newProject, candidates, externalEdits
+                    local projects, newProject, externalEdits
                     local result = catalog:withWriteAccessDo("CreateCollectionSets",
                         function (context)
                             PluginInit.outputToLog("Begin creating collection sets")
@@ -163,6 +192,7 @@ function CreateCollections.createWorkflow(collectionName)
 
                             local workflow = catalog:createCollectionSet("Workflow", newProject, true)
                             candidates = catalog:createCollection(collectionName .. ' candidates', newProject, true)
+                            assets = catalog:createCollection(collectionName .. ' assets', newProject, true)
 
                             local metadata = catalog:createCollectionSet('1 Metadata', workflow, true)
                             local fixTitle = catalog:createSmartCollection('1.1 Fix Title',
@@ -265,20 +295,27 @@ function CreateCollections.createWorkflow(collectionName)
                                 replaceEmptyMetadata(photo, 'location', 'location')
                                 photo:setPropertyForPlugin(_PLUGIN, 'workflowState', 'fixMetadata')
                             end
+                            CreateAssetDirectories(collectionName)
                         end,  -- withWriteAccessDo
                         {
                             timeout = 60,
                             callback = function() PluginInit.outputToLog("task timed out") end,
                         }
                     )
+
+
                     PluginInit.setCollection(projects)
                     PluginInit.setCollection(newProject)
                     PluginInit.setCollection(candidates)
                     PluginInit.outputToLog("Result returned from call to withWriteAccessDo: " .. result)
+                    if candidates then
+                        catalog:setActiveSources(candidates)
+                    end
                 end -- startAsyncTask function
             )
         end, -- callWithContext
         collectionName)
+
 end
 
 

@@ -23,7 +23,12 @@ myLogger:enable( "logfile" ) -- Pass either a string or a table of actions.
 local function outputToLog( message )
     myLogger:trace( message )
 end
+--[[
+The focus shifts somewhat from previous versions. The project subdirectories are only there to hold assets
+derived from raw files, either by passing to an external editor, or by conversion to jpg or another web
+format within LR. We no longer copy all the raw files to the Projects subdirectories.
 
+--]]
 
 LrTasks.startAsyncTask( function ()
     local project = PluginInit.selectedProject()
