@@ -209,6 +209,7 @@ function Filmstrip.makeFilmStrip( args )
                     f:push_button {
                         title = "<",
                         action = function (button)
+                            saveMetadataChanges(properties.selectedPhoto)
                             properties.firstIndex = math.max(properties.firstIndex - 1, 1)
                             properties.selectedPhoto = properties.photos[properties.firstIndex]
                             updateSelectedPhotoFields()
@@ -223,6 +224,7 @@ function Filmstrip.makeFilmStrip( args )
                     f:push_button {
                         title = ">",
                         action = function (button)
+                            saveMetadataChanges(properties.selectedPhoto)
                             local old = properties.firstIndex
                             properties.firstIndex = math.min(properties.firstIndex + 1, length)
                             properties.selectedPhoto = properties.photos[properties.firstIndex]
