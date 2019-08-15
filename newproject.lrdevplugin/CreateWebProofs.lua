@@ -30,40 +30,44 @@ end
 
 LrTasks.startAsyncTask( function ()
     local project = PluginInit.selectedProject()
-
+    outputToLog("Starting with project root " .. projectRoot)
+    local projectDir
     if project then
-        local projectDir = LrPathUtils.child(projectRoot, project)
-        LrFileUtils.createAllDirectories(projectDir)
-        local web = LrPathUtils.child(projectDir, "web")
-        LrFileUtils.createAllDirectories(web)
-        local proofs = LrPathUtils.child(web, "proofs")
-        LrFileUtils.createAllDirectories(proofs)
-        local exportSettings = ExportSettings.getWebExportSettings(web, "proofs")
-        LrTasks.startAsyncTask(
-            function( )
-                outputToLog("Starting async task exporting web proofs")
-                local photos = catalog:getTargetPhotos()
-                if #photos == 0 then return end
-
-                local exportSession = LrExportSession({
-                    photosToExport = photos,
-                    exportSettings = exportSettings,
-                })
-
-                local result = catalog:withWriteAccessDo("doExportOnCurrentTask",
-                        function (context)
-                            exportSession:doExportOnCurrentTask()
-                            for _, rendition in exportSession:renditions() do
-                                local success, pathOrMessage = rendition:waitForRender()
-                                outputToLog("Got pathOrMessage: " .. pathOrMessage)
-                                if success then
-                                    outputToLog("Exported rendition: " .. pathOrMessage)
-                                else
-                                    outputToLog("Got error waiting for rendition: " .. pathOrMessage)
-                                end
-                            end
-                        end)
-                outputToLog("write access do returned " .. result)
-        end)
+        projectDir = LrPathUtils.child(projectRoot, project)
+    else
+        projectDir = LrPathUtils.child(projectRoot, "export")
     end
+    outputToLog("Starting with export root " .. projectDir)
+    LrFileUtils.createAllDirectories(projectDir)
+    local web = LrPathUtils.child(projectDir, "web")
+    LrFileUtils.createAllDirectories(web)
+    local proofs = LrPathUtils.child(web, "proofs")
+    LrFileUtils.createAllDirectories(proofs)
+    local exportSettings = ExportSettings.getWebExportSettings(web, "proofs")
+    LrTasks.startAsyncTask(
+        function( )
+            outputToLog("Starting async task exporting web proofs")
+            local photos = catalog:getTargetPhotos()
+            if #photos == 0 then return end
+
+            local exportSession = LrExportSession({
+                photosToExport = photos,
+                exportSettings = exportSettings,
+            })
+
+            local result = catalog:withWriteAccessDo("doExportOnCurrentTask",
+                    function (context)
+                        exportSession:doExportOnCurrentTask()
+                        for _, rendition in exportSession:renditions() do
+                            local success, pathOrMessage = rendition:waitForRender()
+                            outputToLog("Got pathOrMessage: " .. pathOrMessage)
+                            if success then
+                                outputToLog("Exported rendition: " .. pathOrMessage)
+                            else
+                                outputToLog("Got error waiting for rendition: " .. pathOrMessage)
+                            end
+                        end
+                    end)
+            outputToLog("write access do returned " .. result)
+    end)
 end)
