@@ -43,7 +43,24 @@ LrTasks.startAsyncTask( function ()
     LrFileUtils.createAllDirectories(web)
     local proofs = LrPathUtils.child(web, "proofs")
     LrFileUtils.createAllDirectories(proofs)
-    local exportSettings = ExportSettings.getWebExportSettings(web, "proofs")
+
+    result = LrDialogs.runOpenPanel({
+            title = "Choose Folder",
+            prompt = "Choose",
+            canChooseFiles = false,
+            canChooseDirectories = true,
+            canCreateDirectories = true,
+            allowsMultipleSelection = false,
+            initialDirectory = proofs,
+        })
+    local target = proofs
+    if not result then
+        outputToLog("No new directory chosen")
+    else
+        target = result[1]
+        outputToLog("Chose new directory " .. result[1])
+    end
+    local exportSettings = ExportSettings.getWebExportSettings(target, "proofs")
     LrTasks.startAsyncTask(
         function( )
             outputToLog("Starting async task exporting web proofs")
